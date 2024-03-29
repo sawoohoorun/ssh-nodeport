@@ -1,17 +1,24 @@
+# Base Image
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
-USER ROOT
-# Update package lists and install SSH server
-RUN yum update -y && yum install openssh-server -y
+# Update packages and install OpenSSH server
+RUN yum update -y && yum install -y openssh-server
 
-# Allow root login (not recommended for production)
-RUN sed -i 's/PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
+# Create the 'redhat' user
+RUN useradd --create-home --shell /bin/bash redhat
 
-# Set root password (not recommended for production) - adjust with your desired complexity
-RUN echo "root:r3dh4t1!" | chpasswd
+# Set the password for the 'redhat' user
+RUN echo 'redhat:r3dh4t1!' | chpasswd 
 
-# Expose SSH port
+# Configure SSH to allow the 'redhat' user 
+# (Adjust specific settings in /etc/ssh/sshd_config as needed)
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/g' /etc/ssh/sshd_config
+
+# Expose SSH Port 
 EXPOSE 22
 
-# Restart SSH service (optional)
-CMD ["/usr/sbin/sshd", "-D"]
+# Enable and start sshd service
+RUN systemctl enable sshd.service && systemctl start sshd.service
+
+# Command to keep the container running
+CMD ["/bin/bash", "-c", "while true; do sleep 30; done"] 
