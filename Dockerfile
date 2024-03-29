@@ -1,5 +1,6 @@
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
+USER ROOT
 # Update package lists and install SSH server
 RUN yum update -y && yum install openssh-server -y
 
